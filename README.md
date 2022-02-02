@@ -3,5 +3,5 @@
 # Sierpiński Triangle
 Draw Sierpiński triangle using combinatorics, Pascal triangle, and JavaScript
 
-![Project preview](screenshots/preview.svg)
+![Project preview](screenshots/preview.gif)
 
