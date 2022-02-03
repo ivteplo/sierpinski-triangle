@@ -7,58 +7,11 @@
 const canvas = document.querySelector('canvas')
 const context = canvas.getContext('2d')
 
-// Helper function to make the code cleaner.
-// It creates an iterator for integers in range [from; to]
-function* range (from, to) {
-    for (let i = from; i <= to; ++i) {
-        yield i
-    }
-}
-
-// Find production of all items in an array/iterator
-const multiply = (array, base = 1n) => {
-    let result = base
-    
-    for (let item of array)
-        result *= item
-
-    return result
-}
-
-// Find a factorial of a number
-const factorial = (ofNumber) => multiply(range(2n, ofNumber))
-
-// Function from combinatorics
-const combination = (from, of_) =>
-    // We do this comparison in order to optimize the code
-    // and allow combinations of a bit bigger values to be used
-    of_ > from - of_
-        ? multiply(range(of_ + 1n, from)) / factorial(from - of_)
-        : multiply(range(from - of_ + 1n, from)) / factorial(of_)
-
-// Function that generates a Pascal triangle
-function* pascalTriangle (from, to) {
-    for (let power of range(from, to)) {
-        // Generate coefficients using Newton's binomial
-        const coefficients = Array.from(
-            range(0n, power),
-            // Almost the same as using `#map()`, but 
-            // better for performance
-            (index) => combination(power, index)
-        )
-        
-        // Return the row of coefficients
-        yield coefficients
-    }
-}
-
-
 // The number of rows in the triangle minus 1
 const rowsCount = 64
 
 // Size of a 'cell' in the triangle
 const defaultSquareSize = 4
-
 
 const widthOfLine = (lineNumber, squareSize) =>
     (lineNumber + 1) * squareSize
@@ -66,25 +19,21 @@ const widthOfLine = (lineNumber, squareSize) =>
 const heightOfTriangle = (linesCount, squareSize) =>
     linesCount * squareSize
 
-const bigInt = (number) => BigInt(Math.floor(number))
-
-
 const drawTriangleAt = ({ x, y, startingRow = 1, rowsCount, squareSize }) => {
-    // Set the fill color of our triangle
-    context.fillStyle = 'white'
+    startingRow = bigInt(startingRow - 1)
+    const endingRow = bigInt(rowsCount - 1)
+    const triangle = sierpinskiTriangle(startingRow, endingRow)
 
     // In fact, we can optimize the algorithm by not generating the whole
     // Pascal triangle, but instead just check if numbers are even or odd
-    for (let row of pascalTriangle(bigInt(startingRow - 1), bigInt(rowsCount - 1))) {
+    for (let row of triangle) {
         // Calculate the most left square coordinate
         let itemX = x - Math.floor(squareSize * row.length / 2)
 
-        for (let number of row) {
-            // If the number in Pascal triangle is odd,
-            // then draw the white rectangle
-            if (number % 2n === 1n) {
+        for (const theCellIsFilled of row) {
+            if (theCellIsFilled) {
                 // (`itemX`, `y`) is the center of rectangle,
-                // but canvas uses top left coordinate
+                // but canvas uses top left coordinate of the rectangle
                 context.fillRect(
                     itemX - squareSize / 2,
                     y - squareSize / 2,
@@ -93,7 +42,7 @@ const drawTriangleAt = ({ x, y, startingRow = 1, rowsCount, squareSize }) => {
                 )
             }
 
-            // Update the X coordinate for the next column
+            // Update the X coordinate for the next cell
             itemX += squareSize
         }
 
@@ -101,7 +50,6 @@ const drawTriangleAt = ({ x, y, startingRow = 1, rowsCount, squareSize }) => {
         y += squareSize
     }
 }
-
 
 let lastUpdateTime = Date.now()
 let deltaTime = 0
@@ -120,7 +68,7 @@ const draw = () => {
     context.strokeStyle = 'transparent'
     context.fillRect(0, 0, width, height)
 
-    // Set the fill color of our triangle
+    // Set the fill color of our triangles
     context.fillStyle = 'white'
 
     // Coordinates of the center of the screen
@@ -153,8 +101,8 @@ const draw = () => {
     context.translate(centerX, y)
 
     drawTriangleAt({
-        x: topX, 
-        y: topY, 
+        x: topX,
+        y: topY,
         rowsCount,
         squareSize: topSquareSize
     })
@@ -206,4 +154,3 @@ window.addEventListener('load', () => {
     window.dispatchEvent(new Event('resize'))
     draw()
 })
-
