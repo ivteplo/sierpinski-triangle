@@ -24,8 +24,6 @@ const drawTriangleAt = ({ x, y, startingRow = 1, rowsCount, squareSize }) => {
     const endingRow = bigInt(rowsCount - 1)
     const triangle = sierpinskiTriangle(startingRow, endingRow)
 
-    // In fact, we can optimize the algorithm by not generating the whole
-    // Pascal triangle, but instead just check if numbers are even or odd
     for (let row of triangle) {
         // Calculate the most left square coordinate
         let itemX = x - Math.floor(squareSize * row.length / 2)

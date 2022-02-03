@@ -49,6 +49,8 @@ function* pascalTriangle (from, to) {
 }
 
 function* sierpinskiTriangle (from, to) {
+    // In fact, we can optimize the algorithm by not generating the whole
+    // Pascal triangle, but instead just check if numbers are even or odd
     for (const row of pascalTriangle(from, to)) {
         yield row.map(item => item % 2n === 1n)
     }
